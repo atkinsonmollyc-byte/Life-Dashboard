@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard Summary</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <section class="summary-header">
+      <p class="success-title">✓ Today's Summary</p>
+      <p class="summary-copy">Great job! Your daily habits have been logged.</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">ℹ</span>
+        <span>This app stores only the entries you add on this device.</span>
+      </div>
+      <div class="summary-actions">
+        <a class="button-link" href="history.html">View History →</a>
+      </div>
+    </section>
+
+    <section class="today-hub-section">
+      <div class="hub-intro">
+        <h2>Today's Summary</h2>
+        <p>Latest entry and quick habit overview for today.</p>
+      </div>
+
+      <div class="hub-container">
+        <div class="hub-center">
+          <span>TODAY</span>
+        </div>
+
+        <div class="hub-node node-water card-water">
+          <span class="node-label">Water</span>
+          <span class="node-value" id="water-value">—</span>
+        </div>
+
+        <div class="hub-node node-sleep card-sleep">
+          <span class="node-label">Sleep</span>
+          <span class="node-value" id="sleep-value">—</span>
+        </div>
+
+        <div class="hub-node node-exercise card-exercise">
+          <span class="node-label">Exercise</span>
+          <span class="node-value" id="exercise-value">—</span>
+        </div>
+
+        <div class="hub-node node-reading card-reading">
+          <span class="node-label">Reading</span>
+          <span class="node-value" id="reading-value">—</span>
+        </div>
+
+        <div class="hub-node node-screenTime card-screenTime">
+          <span class="node-label">Screen Time</span>
+          <span class="node-value" id="screenTime-value">—</span>
+        </div>
+      </div>
+      <div id="today-empty" class="no-entries hidden" style="margin-top:1rem; text-align:center;">
+        <div>No entry has been logged for today yet.</div>
+        <div style="margin-top:0.6rem"><a class="button-link" href="index.html">Add today's entry</a></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Weekly Snapshot</h2>
+      <div class="snapshot-grid">
+        <div class="snapshot-card card-sleep">
+          <p class="snapshot-card-title">Average Sleep</p>
+          <p class="snapshot-card-value" id="average-sleep">—</p>
+        </div>
+        <div class="snapshot-card card-exercise">
+          <p class="snapshot-card-title">Total Exercise</p>
+          <p class="snapshot-card-value" id="total-exercise">—</p>
+        </div>
+        <div class="snapshot-card card-reading">
+          <p class="snapshot-card-title">Total Reading</p>
+          <p class="snapshot-card-value" id="total-reading">—</p>
+        </div>
+        <div class="snapshot-card card-screenTime">
+          <p class="snapshot-card-title">Average Screen Time</p>
+          <p class="snapshot-card-value" id="average-screenTime">—</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Data Overview</h2>
+      <div class="overview-grid">
+        <div class="overview-card">
+          <p class="overview-card-title">Entries Saved</p>
+          <p class="overview-card-value" id="entries-saved">0</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'lifeDashboardEntries';
+
+    function loadEntries() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [];
+
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function todayYMD() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function updateSummary(entries) {
+      // find entry for today's date (prefer most recently saved for today)
+      const today = todayYMD();
+      const todays = (entries || []).filter(e => e && e.date === today);
+      const todaysEntry = todays.length ? todays[todays.length - 1] : null;
+
+      const emptyEl = document.getElementById('today-empty');
+      if (todaysEntry) {
+        document.getElementById('water-value').textContent = `${todaysEntry.water} glasses`;
+        document.getElementById('sleep-value').textContent = `${todaysEntry.sleep} hrs`;
+        document.getElementById('exercise-value').textContent = `${todaysEntry.exercise} min`;
+        document.getElementById('reading-value').textContent = `${todaysEntry.reading} min`;
+        document.getElementById('screenTime-value').textContent = `${todaysEntry.screenTime} hrs`;
+        if (emptyEl) emptyEl.classList.add('hidden');
+      } else {
+        // no entry for today
+        document.getElementById('water-value').textContent = '—';
+        document.getElementById('sleep-value').textContent = '—';
+        document.getElementById('exercise-value').textContent = '—';
+        document.getElementById('reading-value').textContent = '—';
+        document.getElementById('screenTime-value').textContent = '—';
+        if (emptyEl) emptyEl.classList.remove('hidden');
+      }
+
+      // Weekly snapshot & overview still use all entries
+      const totalEntries = entries.length;
+      const totalSleep = entries.reduce((sum, entry) => sum + Number(entry.sleep), 0);
+      const totalExercise = entries.reduce((sum, entry) => sum + Number(entry.exercise), 0);
+      const totalReading = entries.reduce((sum, entry) => sum + Number(entry.reading), 0);
+      const totalScreenTime = entries.reduce((sum, entry) => sum + Number(entry.screenTime), 0);
+
+      document.getElementById('entries-saved').textContent = totalEntries;
+      document.getElementById('average-sleep').textContent = totalEntries ? `${(totalSleep / totalEntries).toFixed(1)} hrs` : '—';
+      document.getElementById('total-exercise').textContent = totalEntries ? `${totalExercise} min` : '—';
+      document.getElementById('total-reading').textContent = totalEntries ? `${totalReading} min` : '—';
+      document.getElementById('average-screenTime').textContent = totalEntries ? `${(totalScreenTime / totalEntries).toFixed(1)} hrs` : '—';
+    }
+
+    const entries = loadEntries();
+    updateSummary(entries);
+  </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard — History</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <section class="summary-header">
+      <p class="success-title">Entry History</p>
+      <p class="summary-copy">All your saved daily entries are shown below (most recent first).</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">ℹ</span>
+        <span>This app stores only the entries you add on this device.</span>
+      </div>
+      <div class="summary-actions">
+        <a class="button-link" href="summary.html">← Back to Summary</a>
+      </div>
+    </section>
+
+    <section>
+      <div id="history-area">
+        <!-- table or no-entries message injected here -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'lifeDashboardEntries';
+
+    function loadEntries() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [];
+
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function renderHistory(entries) {
+      const container = document.getElementById('history-area');
+      container.innerHTML = '';
+
+      if (!entries || entries.length === 0) {
+        const msg = document.createElement('div');
+        msg.className = 'no-entries';
+        msg.textContent = 'No entries recorded yet. Use the app to add your daily habits and they will appear here.';
+        container.appendChild(msg);
+        return;
+      }
+
+      const wrap = document.createElement('div');
+      wrap.className = 'history-wrap';
+
+      const table = document.createElement('table');
+      table.className = 'history-table';
+
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Date</th>
+          <th>Water</th>
+          <th>Sleep</th>
+          <th>Exercise</th>
+          <th>Reading</th>
+          <th>Screen Time</th>
+          <th>Action</th>
+        </tr>
+      `;
+
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      // map entries to include original index, then sort by date (newest first)
+      const mapped = entries.map((entry, idx) => ({ entry, idx }));
+      mapped.sort((a, b) => {
+        const da = new Date(a.entry.date || 0).getTime();
+        const db = new Date(b.entry.date || 0).getTime();
+        return db - da; // newest first
+      });
+
+      for (const item of mapped) {
+        const e = item.entry;
+        const originalIndex = item.idx;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${e.date || '—'}</td>
+          <td>${e.water != null ? e.water : '—'}</td>
+          <td>${e.sleep != null ? e.sleep : '—'}</td>
+          <td>${e.exercise != null ? e.exercise : '—'}</td>
+          <td>${e.reading != null ? e.reading : '—'}</td>
+          <td>${e.screenTime != null ? e.screenTime : '—'}</td>
+          <td><button class="delete-entry" data-index="${originalIndex}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      container.appendChild(wrap);
+    }
+
+      // attach delete handler (event delegation) to the history container
+      const containerEl = document.getElementById('history-area');
+      containerEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.delete-entry');
+        if (!btn) return;
+        const idx = Number(btn.dataset.index);
+        if (!Number.isInteger(idx)) return;
+
+        const all = loadEntries();
+        if (!all[idx]) return;
+
+        // remove only the entry at original index
+        all.splice(idx, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+
+        // re-render and update any entries count element
+        renderHistory(all);
+        const countEl = document.getElementById('entries-saved');
+        if (countEl) countEl.textContent = all.length;
+      });
+
+      const entries = loadEntries();
+      renderHistory(entries);
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Life Dashboard</h1>
+    <div class="data-notice" role="status" aria-live="polite">
+      <span class="notice-icon">ℹ</span>
+      <span>This app stores only the entries you add on this device.</span>
+    </div>
+
+    <form id="entry-form" novalidate>
+      <div class="field-group">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" required />
+        <span class="field-error" id="date-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="water">Water (glasses)</label>
+        <input id="water" name="water" type="number" min="0" max="30" required />
+        <span class="field-error" id="water-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="sleep">Sleep (hours)</label>
+        <input id="sleep" name="sleep" type="number" min="0" max="24" step="0.1" required />
+        <span class="field-error" id="sleep-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="exercise">Exercise (minutes)</label>
+        <input id="exercise" name="exercise" type="number" min="0" max="600" required />
+        <span class="field-error" id="exercise-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="reading">Reading (minutes)</label>
+        <input id="reading" name="reading" type="number" min="0" max="600" required />
+        <span class="field-error" id="reading-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="screenTime">Screen Time (hours)</label>
+        <input id="screenTime" name="screenTime" type="number" min="0" max="24" step="0.1" required />
+        <span class="field-error" id="screenTime-error"></span>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Submit</button>
+      </div>
+      <p id="feedback-message" class="feedback" aria-live="polite"></p>
+    </form>
+
+    <section id="success-state" class="success-state hidden" aria-live="polite">
+      <p class="success-title">✓ RESPONSE SUBMITTED</p>
+      <p class="success-copy">Your daily habits have been saved successfully.</p>
+      <a id="view-summary-button" class="button-link" href="summary.html">View Summary →</a>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
