@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard Reading Log</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <nav class="page-tabs" aria-label="Primary">
+      <a class="page-tab" href="index.html">Log Entry</a>
+      <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab active" href="reading-log.html" aria-current="page">Reading Log</a>
+      <a class="page-tab" href="history.html">History</a>
+    </nav>
+
+    <section class="summary-header">
+      <p class="success-title">Reading Log</p>
+      <p class="summary-copy">Record books you have finished and keep a small shelf of your reading wins.</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">i</span>
+        <span>Your reading log is saved only on this device.</span>
+      </div>
+    </section>
+
+    <form id="reading-log-form" class="reading-log-form" novalidate>
+      <div class="field-group" id="title-group">
+        <label for="book-title">Book Title</label>
+        <input id="book-title" name="title" type="text" required />
+        <span class="field-error" id="title-error"></span>
+      </div>
+
+      <div class="field-group" id="author-group">
+        <label for="book-author">Author</label>
+        <input id="book-author" name="author" type="text" required />
+        <span class="field-error" id="author-error"></span>
+      </div>
+
+      <div class="field-group" id="rating-group">
+        <label for="book-rating">Rating</label>
+        <select id="book-rating" name="rating" required>
+          <option value="">Choose a rating</option>
+          <option value="1">★☆☆☆☆</option>
+          <option value="2">★★☆☆☆</option>
+          <option value="3">★★★☆☆</option>
+          <option value="4">★★★★☆</option>
+          <option value="5">★★★★★</option>
+        </select>
+        <span class="field-error" id="rating-error"></span>
+      </div>
+
+      <div class="field-group" id="date-finished-group">
+        <label for="date-finished">Date Finished</label>
+        <input id="date-finished" name="dateFinished" type="date" required />
+        <span class="field-error" id="date-finished-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="book-review">Short Review <span class="optional-label">(optional)</span></label>
+        <textarea id="book-review" name="review" rows="4" placeholder="What did you think?"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Add Book</button>
+      </div>
+      <p id="reading-feedback" class="feedback" aria-live="polite"></p>
+    </form>
+
+    <section class="reading-stats-section" aria-labelledby="reading-stats-title">
+      <h2 id="reading-stats-title">Reading Stats</h2>
+      <div class="reading-stats-grid">
+        <div class="reading-stat-card">
+          <p class="reading-stat-title">Total Books Read</p>
+          <p class="reading-stat-value" id="total-books">0</p>
+        </div>
+        <div class="reading-stat-card">
+          <p class="reading-stat-title">Average Rating</p>
+          <p class="reading-stat-value" id="average-rating">—</p>
+        </div>
+        <div class="reading-stat-card">
+          <p class="reading-stat-title">Highest Rated Book</p>
+          <p class="reading-stat-value reading-stat-book" id="highest-rated-book">—</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading-list-section" aria-labelledby="reading-list-title">
+      <h2 id="reading-list-title">Completed Books</h2>
+      <div id="reading-empty" class="no-entries">No completed books yet.</div>
+      <div id="reading-list" class="reading-list"></div>
+    </section>
+  </main>
+
+  <script>
+    const READING_LOG_STORAGE_KEY = 'lifeDashboardReadingLog';
+
+    const form = document.getElementById('reading-log-form');
+    const feedback = document.getElementById('reading-feedback');
+    const list = document.getElementById('reading-list');
+    const emptyState = document.getElementById('reading-empty');
+
+    const fields = {
+      title: {
+        input: document.getElementById('book-title'),
+        group: document.getElementById('title-group'),
+        error: document.getElementById('title-error'),
+        message: 'Book title is required.',
+      },
+      author: {
+        input: document.getElementById('book-author'),
+        group: document.getElementById('author-group'),
+        error: document.getElementById('author-error'),
+        message: 'Author is required.',
+      },
+      rating: {
+        input: document.getElementById('book-rating'),
+        group: document.getElementById('rating-group'),
+        error: document.getElementById('rating-error'),
+        message: 'Rating is required.',
+      },
+      dateFinished: {
+        input: document.getElementById('date-finished'),
+        group: document.getElementById('date-finished-group'),
+        error: document.getElementById('date-finished-error'),
+        message: 'Date finished is required.',
+      },
+    };
+
+    function loadBooks() {
+      const saved = localStorage.getItem(READING_LOG_STORAGE_KEY);
+      if (!saved) return [];
+
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBooks(books) {
+      localStorage.setItem(READING_LOG_STORAGE_KEY, JSON.stringify(books));
+    }
+
+    function starRating(rating) {
+      const value = Number(rating);
+      return '★'.repeat(value) + '☆'.repeat(5 - value);
+    }
+
+    function clearFieldError(field) {
+      field.group.classList.remove('invalid');
+      field.error.textContent = '';
+    }
+
+    function setFieldError(field) {
+      field.group.classList.add('invalid');
+      field.error.textContent = field.message;
+    }
+
+    function validateForm() {
+      let isValid = true;
+
+      Object.values(fields).forEach((field) => {
+        const value = field.input.value.trim();
+        if (!value) {
+          setFieldError(field);
+          isValid = false;
+        } else {
+          clearFieldError(field);
+        }
+      });
+
+      return isValid;
+    }
+
+    function calculateAverageRating(books) {
+      if (!books.length) return null;
+
+      const total = books.reduce((sum, book) => sum + Number(book.rating), 0);
+      return total / books.length;
+    }
+
+    function findHighestRatedBook(books) {
+      if (!books.length) return null;
+
+      return books.reduce((highest, book) => (
+        Number(book.rating) > Number(highest.rating) ? book : highest
+      ), books[0]);
+    }
+
+    function updateStats(books) {
+      const averageRating = calculateAverageRating(books);
+      const highestRatedBook = findHighestRatedBook(books);
+
+      document.getElementById('total-books').textContent = books.length;
+      document.getElementById('average-rating').textContent = averageRating ? `${averageRating.toFixed(1)} ★` : '—';
+      document.getElementById('highest-rated-book').textContent = highestRatedBook
+        ? `${highestRatedBook.title} (${starRating(highestRatedBook.rating)})`
+        : '—';
+    }
+
+    function renderBooks() {
+      const books = loadBooks();
+      list.innerHTML = '';
+      emptyState.classList.toggle('hidden', books.length > 0);
+
+      books
+        .slice()
+        .sort((a, b) => b.dateFinished.localeCompare(a.dateFinished))
+        .forEach((book) => {
+          const card = document.createElement('article');
+          card.className = 'reading-book-card';
+
+          const header = document.createElement('div');
+          header.className = 'reading-book-header';
+
+          const titleWrap = document.createElement('div');
+          const title = document.createElement('h3');
+          title.textContent = book.title;
+          const author = document.createElement('p');
+          author.className = 'reading-book-author';
+          author.textContent = `by ${book.author}`;
+          titleWrap.append(title, author);
+
+          const rating = document.createElement('span');
+          rating.className = 'reading-book-rating';
+          rating.setAttribute('aria-label', `${book.rating} out of 5 stars`);
+          rating.textContent = starRating(book.rating);
+
+          const date = document.createElement('p');
+          date.className = 'reading-book-date';
+          date.textContent = `Finished ${book.dateFinished}`;
+
+          header.append(titleWrap, rating);
+          card.append(header, date);
+
+          if (book.review) {
+            const review = document.createElement('p');
+            review.className = 'reading-book-review';
+            review.textContent = book.review;
+            card.appendChild(review);
+          }
+
+          list.appendChild(card);
+        });
+
+      updateStats(books);
+    }
+
+    Object.values(fields).forEach((field) => {
+      field.input.addEventListener('input', () => clearFieldError(field));
+      field.input.addEventListener('change', () => clearFieldError(field));
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      feedback.textContent = '';
+
+      if (!validateForm()) return;
+
+      const books = loadBooks();
+      const id = window.crypto && typeof window.crypto.randomUUID === 'function'
+        ? window.crypto.randomUUID()
+        : String(Date.now());
+
+      books.push({
+        id,
+        title: fields.title.input.value.trim(),
+        author: fields.author.input.value.trim(),
+        rating: Number(fields.rating.input.value),
+        dateFinished: fields.dateFinished.input.value,
+        review: document.getElementById('book-review').value.trim(),
+      });
+
+      saveBooks(books);
+      form.reset();
+      feedback.textContent = 'Book added to your reading log.';
+      renderBooks();
+    });
+
+    renderBooks();
+  </script>
+</body>
+</html>

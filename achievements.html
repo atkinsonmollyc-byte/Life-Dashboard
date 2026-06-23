@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard Achievements</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <nav class="page-tabs" aria-label="Primary">
+      <a class="page-tab" href="index.html">Log Entry</a>
+      <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab active" href="achievements.html" aria-current="page">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
+      <a class="page-tab" href="history.html">History</a>
+    </nav>
+
+    <section class="summary-header">
+      <p class="success-title">Badge Collection</p>
+      <p class="summary-copy">Your achievements unlock as your saved habits grow.</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">i</span>
+        <span>Achievements are calculated from the entries and goals saved on this device.</span>
+      </div>
+    </section>
+
+    <section class="achievements-section" aria-labelledby="achievements-title">
+      <div class="achievements-heading">
+        <h2 id="achievements-title">Achievements</h2>
+        <p>Unlocked badges appear in full colour. Locked badges stay softly muted.</p>
+      </div>
+      <div class="achievements-grid badge-collection">
+        <div class="achievement-card locked" id="achievement-hydration">
+          <span class="achievement-icon">💧</span>
+          <div>
+            <p class="achievement-title">Hydration Hero</p>
+            <p class="achievement-copy">Meet today's water goal.</p>
+            <p class="achievement-status">Locked</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-bookworm">
+          <span class="achievement-icon">📚</span>
+          <div>
+            <p class="achievement-title">Bookworm</p>
+            <p class="achievement-copy">Log 100+ total reading minutes.</p>
+            <p class="achievement-status">Locked</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-consistency">
+          <span class="achievement-icon">🔥</span>
+          <div>
+            <p class="achievement-title">Consistency Champion</p>
+            <p class="achievement-copy">Reach a 5-day streak.</p>
+            <p class="achievement-status">Locked</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-sleep">
+          <span class="achievement-icon">😴</span>
+          <div>
+            <p class="achievement-title">Sleep Star</p>
+            <p class="achievement-copy">Meet today's sleep goal.</p>
+            <p class="achievement-status">Locked</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-balanced">
+          <span class="achievement-icon">🌸</span>
+          <div>
+            <p class="achievement-title">Balanced Day</p>
+            <p class="achievement-copy">Meet at least 3 of today's goals.</p>
+            <p class="achievement-status">Locked</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'lifeDashboardEntries';
+    const GOALS_STORAGE_KEY = 'lifeDashboardGoals';
+    const USER_NAME_STORAGE_KEY = 'lifeDashboardUserName';
+
+    const DEFAULT_GOALS = {
+      water: 8,
+      sleep: 8,
+      exercise: 30,
+      reading: 20,
+      screenTime: 4,
+    };
+
+    const HABIT_DETAILS = {
+      water: { type: 'minimum' },
+      sleep: { type: 'minimum' },
+      exercise: { type: 'minimum' },
+      reading: { type: 'minimum' },
+      screenTime: { type: 'maximum' },
+    };
+
+    function loadEntries() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [];
+
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function loadGoals() {
+      const saved = localStorage.getItem(GOALS_STORAGE_KEY);
+      if (!saved) return DEFAULT_GOALS;
+
+      try {
+        return { ...DEFAULT_GOALS, ...JSON.parse(saved) };
+      } catch {
+        return DEFAULT_GOALS;
+      }
+    }
+
+    function loadUserName() {
+      return localStorage.getItem(USER_NAME_STORAGE_KEY) || '';
+    }
+
+    function todayYMD() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function dateToYMD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function calculateCurrentStreak(entries) {
+      const entryDates = new Set(
+        (entries || [])
+          .filter(entry => entry && entry.date)
+          .map(entry => entry.date)
+      );
+
+      let streak = 0;
+      const checkDate = new Date();
+
+      while (entryDates.has(dateToYMD(checkDate))) {
+        streak += 1;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      return streak;
+    }
+
+    function goalIsMet(key, todaysEntry, goals) {
+      if (!todaysEntry) return false;
+
+      const details = HABIT_DETAILS[key];
+      const value = Number(todaysEntry[key]);
+      const goal = Number(goals[key]);
+
+      return details.type === 'maximum' ? value <= goal : value >= goal;
+    }
+
+    function countMetGoals(todaysEntry, goals) {
+      return Object.keys(HABIT_DETAILS).filter((key) => goalIsMet(key, todaysEntry, goals)).length;
+    }
+
+    function setAchievement(id, unlocked) {
+      const card = document.getElementById(id);
+      const status = card.querySelector('.achievement-status');
+      const name = loadUserName();
+      card.classList.toggle('unlocked', unlocked);
+      card.classList.toggle('locked', !unlocked);
+      status.textContent = unlocked ? (name ? `Amazing work today, ${name}!` : 'Unlocked') : 'Locked';
+    }
+
+    function updateAchievements() {
+      const entries = loadEntries();
+      const goals = loadGoals();
+      const today = todayYMD();
+      const todays = entries.filter(entry => entry && entry.date === today);
+      const todaysEntry = todays.length ? todays[todays.length - 1] : null;
+      const totalReading = entries.reduce((sum, entry) => sum + Number(entry.reading || 0), 0);
+      const currentStreak = calculateCurrentStreak(entries);
+      const metGoals = countMetGoals(todaysEntry, goals);
+
+      setAchievement('achievement-hydration', goalIsMet('water', todaysEntry, goals));
+      setAchievement('achievement-bookworm', totalReading >= 100);
+      setAchievement('achievement-consistency', currentStreak >= 5);
+      setAchievement('achievement-sleep', goalIsMet('sleep', todaysEntry, goals));
+      setAchievement('achievement-balanced', metGoals >= 3);
+    }
+
+    updateAchievements();
+  </script>
+</body>
+</html>

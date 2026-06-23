@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard Avatar</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <nav class="page-tabs" aria-label="Primary">
+      <a class="page-tab" href="index.html">Log Entry</a>
+      <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab active" href="companion.html" aria-current="page">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
+      <a class="page-tab" href="history.html">History</a>
+    </nav>
+
+    <section class="summary-header">
+      <p class="success-title">Personalisation</p>
+      <p class="summary-copy">Choose the little details that make Life Dashboard feel like yours.</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">i</span>
+        <span>Your name, avatar, and theme choices are saved only on this device.</span>
+      </div>
+    </section>
+
+    <section class="personalisation-section" aria-labelledby="name-title">
+      <div class="theme-heading">
+        <h2 id="name-title">Name</h2>
+        <p>Add your name if you want a more personal dashboard. This is optional.</p>
+      </div>
+
+      <div class="field-group">
+        <label for="user-name">Your name</label>
+        <input id="user-name" name="userName" type="text" maxlength="40" placeholder="Name" />
+      </div>
+      <div class="actions">
+        <button id="save-name" type="button">Save Name</button>
+      </div>
+      <p id="name-feedback" class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="companion-picker" aria-labelledby="companion-title">
+      <h2 id="companion-title">Avatar</h2>
+      <div class="companion-options">
+        <label class="companion-option">
+          <input type="radio" name="companion" value="cat" />
+          <span class="companion-emoji">🐱</span>
+          <span>Cat</span>
+        </label>
+        <label class="companion-option">
+          <input type="radio" name="companion" value="dog" />
+          <span class="companion-emoji">🐶</span>
+          <span>Dog</span>
+        </label>
+        <label class="companion-option">
+          <input type="radio" name="companion" value="flower" />
+          <span class="companion-emoji">🌸</span>
+          <span>Flower</span>
+        </label>
+        <label class="companion-option">
+          <input type="radio" name="companion" value="star" />
+          <span class="companion-emoji">⭐</span>
+          <span>Star</span>
+        </label>
+        <label class="companion-option">
+          <input type="radio" name="companion" value="moon" />
+          <span class="companion-emoji">🌙</span>
+          <span>Moon</span>
+        </label>
+        <label class="companion-option">
+          <input type="radio" name="companion" value="butterfly" />
+          <span class="companion-emoji">🦋</span>
+          <span>Butterfly</span>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="save-companion" type="button">Save Avatar</button>
+      </div>
+      <p id="companion-feedback" class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="theme-section" aria-labelledby="theme-title">
+      <div class="theme-heading">
+        <h2 id="theme-title">App Theme</h2>
+        <p>Personalise the colour style used across Life Dashboard.</p>
+      </div>
+
+      <div class="theme-options" role="radiogroup" aria-label="App theme">
+        <label class="theme-option theme-option-original">
+          <input type="radio" name="app-theme" value="original" />
+          <span class="theme-swatch"></span>
+          <span>Original</span>
+        </label>
+        <label class="theme-option theme-option-pastel">
+          <input type="radio" name="app-theme" value="pastel" />
+          <span class="theme-swatch"></span>
+          <span>Pastel</span>
+        </label>
+        <label class="theme-option theme-option-blue">
+          <input type="radio" name="app-theme" value="blue" />
+          <span class="theme-swatch"></span>
+          <span>Blue</span>
+        </label>
+        <label class="theme-option theme-option-peach">
+          <input type="radio" name="app-theme" value="peach" />
+          <span class="theme-swatch"></span>
+          <span>Peach</span>
+        </label>
+      </div>
+      <p id="theme-feedback" class="feedback success" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script>
+    const COMPANION_STORAGE_KEY = 'lifeDashboardCompanion';
+    const USER_NAME_STORAGE_KEY = 'lifeDashboardUserName';
+    const feedback = document.getElementById('companion-feedback');
+    const nameInput = document.getElementById('user-name');
+    const nameFeedback = document.getElementById('name-feedback');
+    const avatarDetails = {
+      cat: { name: 'Cat' },
+      dog: { name: 'Dog' },
+      flower: { name: 'Flower' },
+      star: { name: 'Star' },
+      moon: { name: 'Moon' },
+      butterfly: { name: 'Butterfly' },
+    };
+
+    function loadCompanion() {
+      return localStorage.getItem(COMPANION_STORAGE_KEY) || '';
+    }
+
+    function loadUserName() {
+      return localStorage.getItem(USER_NAME_STORAGE_KEY) || '';
+    }
+
+    function fillSavedName() {
+      nameInput.value = loadUserName();
+    }
+
+    function selectSavedCompanion() {
+      const savedCompanion = loadCompanion();
+      if (!savedCompanion) return;
+
+      const option = document.querySelector(`input[name="companion"][value="${savedCompanion}"]`);
+      if (option) option.checked = true;
+    }
+
+    document.getElementById('save-companion').addEventListener('click', () => {
+      const selected = document.querySelector('input[name="companion"]:checked');
+
+      if (!selected) {
+        feedback.textContent = 'Please choose an avatar.';
+        feedback.className = 'feedback error';
+        return;
+      }
+
+      localStorage.setItem(COMPANION_STORAGE_KEY, selected.value);
+      feedback.textContent = `${avatarDetails[selected.value].name} avatar saved.`;
+      feedback.className = 'feedback success';
+    });
+
+    document.getElementById('save-name').addEventListener('click', () => {
+      const name = nameInput.value.trim();
+
+      if (name) {
+        localStorage.setItem(USER_NAME_STORAGE_KEY, name);
+        nameFeedback.textContent = `Name saved. Welcome, ${name}.`;
+      } else {
+        localStorage.removeItem(USER_NAME_STORAGE_KEY);
+        nameFeedback.textContent = 'Name cleared. Generic messages will be used.';
+      }
+
+      nameFeedback.className = 'feedback success';
+    });
+
+    function updateThemeSelection(theme) {
+      document.querySelectorAll('input[name="app-theme"]').forEach((input) => {
+        input.checked = input.value === theme;
+      });
+    }
+
+    document.querySelectorAll('input[name="app-theme"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        saveTheme(input.value);
+        updateThemeSelection(input.value);
+        document.getElementById('theme-feedback').textContent = 'Theme saved.';
+      });
+    });
+
+    selectSavedCompanion();
+    fillSavedName();
+    updateThemeSelection(getSavedTheme());
+  </script>
+</body>
+</html>

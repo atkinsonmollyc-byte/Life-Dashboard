@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Life Dashboard</title>
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,11 +13,24 @@
     <nav class="page-tabs" aria-label="Primary">
       <a class="page-tab active" href="index.html" aria-current="page">Log Entry</a>
       <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
       <a class="page-tab" href="history.html">History</a>
     </nav>
     <div class="data-notice" role="status" aria-live="polite">
       <span class="notice-icon">ℹ</span>
       <span>This app stores only the entries you add on this device.</span>
+    </div>
+    <div class="data-notice mood-note" role="note">
+      <span class="notice-icon">ℹ</span>
+      <span>Mood check-ins are for simple self-reflection, not medical or mental health advice.</span>
+    </div>
+
+    <div id="edit-notice" class="edit-notice hidden" role="status">
+      <p id="edit-notice-text">Editing an existing entry. Your changes will update this saved day.</p>
+      <a class="button-link secondary-link" href="history.html">Cancel Edit</a>
     </div>
 
     <form id="entry-form" novalidate>
@@ -56,10 +70,30 @@
         <span class="field-error" id="screenTime-error"></span>
       </div>
 
+      <div class="field-group">
+        <label for="mood">Mood</label>
+        <select id="mood" name="mood" required>
+          <option value="">Choose your mood</option>
+          <option value="Great 😊">Great 😊</option>
+          <option value="Good 🙂">Good 🙂</option>
+          <option value="Okay 😐">Okay 😐</option>
+          <option value="Low 🙁">Low 🙁</option>
+          <option value="Tired 😴">Tired 😴</option>
+        </select>
+        <span class="field-error" id="mood-error"></span>
+      </div>
+
       <div class="actions">
-        <button type="submit">Submit</button>
+        <button id="submit-entry-button" type="submit">Submit</button>
       </div>
       <p id="feedback-message" class="feedback" aria-live="polite"></p>
+      <div id="duplicate-warning" class="duplicate-warning hidden" role="alert">
+        <p>You already have an entry for this date.</p>
+        <div class="duplicate-actions">
+          <button id="cancel-duplicate" type="button" class="secondary-button">Cancel</button>
+          <button id="save-duplicate" type="button">Save Anyway</button>
+        </div>
+      </div>
     </form>
 
     <section id="success-state" class="success-state hidden" aria-live="polite">
@@ -67,6 +101,13 @@
       <p class="success-copy">Your daily habits have been saved successfully.</p>
       <a id="view-summary-button" class="button-link" href="summary.html">View Summary →</a>
     </section>
+    <div id="companion-popup" class="companion-popup hidden" role="dialog" aria-modal="true" aria-labelledby="companion-popup-message">
+      <div class="companion-popup-card">
+        <button id="close-companion-popup" class="popup-close" type="button" aria-label="Close">×</button>
+        <div id="companion-popup-icon" class="companion-popup-icon">🐱</div>
+        <p id="companion-popup-message">Purrfect work! You completed a goal today.</p>
+      </div>
+    </div>
   </main>
   <script src="script.js"></script>
 </body>

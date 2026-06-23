@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard Goals</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <nav class="page-tabs" aria-label="Primary">
+      <a class="page-tab" href="index.html">Log Entry</a>
+      <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab active" href="goals.html" aria-current="page">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
+      <a class="page-tab" href="history.html">History</a>
+    </nav>
+
+    <section class="summary-header">
+      <p class="success-title">Daily Goals</p>
+      <p class="summary-copy">Set your own daily targets. These goals only change how Summary checks progress.</p>
+      <div class="data-notice" role="status" aria-live="polite">
+        <span class="notice-icon">i</span>
+        <span>Your habit entries stay saved separately from these goals.</span>
+      </div>
+    </section>
+
+    <form id="goals-form" class="goals-form" novalidate>
+      <div class="field-group">
+        <label for="water-goal-input">Water goal (glasses)</label>
+        <input id="water-goal-input" name="water" type="number" min="0" max="30" step="1" required />
+        <span class="field-error" id="water-goal-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="sleep-goal-input">Sleep goal (hours)</label>
+        <input id="sleep-goal-input" name="sleep" type="number" min="0" max="24" step="0.1" required />
+        <span class="field-error" id="sleep-goal-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="exercise-goal-input">Exercise goal (minutes)</label>
+        <input id="exercise-goal-input" name="exercise" type="number" min="0" max="600" step="1" required />
+        <span class="field-error" id="exercise-goal-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="reading-goal-input">Reading goal (minutes)</label>
+        <input id="reading-goal-input" name="reading" type="number" min="0" max="600" step="1" required />
+        <span class="field-error" id="reading-goal-error"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="screenTime-goal-input">Screen Time limit (hours)</label>
+        <input id="screenTime-goal-input" name="screenTime" type="number" min="0" max="24" step="0.1" required />
+        <span class="field-error" id="screenTime-goal-error"></span>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Save Goals</button>
+      </div>
+      <p id="goals-feedback" class="feedback" aria-live="polite"></p>
+    </form>
+
+    <section class="export-section" aria-labelledby="export-title">
+      <div>
+        <h2 id="export-title">Export Data</h2>
+        <p>Download your saved habit entries and goals as a JSON file.</p>
+      </div>
+      <button id="export-data-button" type="button">Export Data</button>
+    </section>
+  </main>
+
+  <script>
+    const ENTRIES_STORAGE_KEY = 'lifeDashboardEntries';
+    const GOALS_STORAGE_KEY = 'lifeDashboardGoals';
+
+    const defaultGoals = {
+      water: 8,
+      sleep: 8,
+      exercise: 30,
+      reading: 20,
+      screenTime: 4,
+    };
+
+    const goalFields = {
+      water: {
+        input: document.getElementById('water-goal-input'),
+        error: document.getElementById('water-goal-error'),
+        label: 'Water goal',
+        max: 30,
+      },
+      sleep: {
+        input: document.getElementById('sleep-goal-input'),
+        error: document.getElementById('sleep-goal-error'),
+        label: 'Sleep goal',
+        max: 24,
+      },
+      exercise: {
+        input: document.getElementById('exercise-goal-input'),
+        error: document.getElementById('exercise-goal-error'),
+        label: 'Exercise goal',
+        max: 600,
+      },
+      reading: {
+        input: document.getElementById('reading-goal-input'),
+        error: document.getElementById('reading-goal-error'),
+        label: 'Reading goal',
+        max: 600,
+      },
+      screenTime: {
+        input: document.getElementById('screenTime-goal-input'),
+        error: document.getElementById('screenTime-goal-error'),
+        label: 'Screen Time limit',
+        max: 24,
+      },
+    };
+
+    function loadSavedGoals() {
+      const saved = localStorage.getItem(GOALS_STORAGE_KEY);
+      if (!saved) return defaultGoals;
+
+      try {
+        return { ...defaultGoals, ...JSON.parse(saved) };
+      } catch {
+        return defaultGoals;
+      }
+    }
+
+    function setError(field, message) {
+      const group = field.input.closest('.field-group');
+      if (group) group.classList.toggle('invalid', Boolean(message));
+      field.error.textContent = message;
+    }
+
+    function validateGoal(field) {
+      const value = field.input.value.trim();
+      if (value === '') return `${field.label} is required.`;
+
+      const number = Number(value);
+      if (Number.isNaN(number) || number < 0) {
+        return `${field.label} cannot be negative.`;
+      }
+
+      if (number > field.max) {
+        return `${field.label} cannot be over ${field.max}.`;
+      }
+
+      return '';
+    }
+
+    function validateForm() {
+      let valid = true;
+
+      Object.values(goalFields).forEach((field) => {
+        const message = validateGoal(field);
+        setError(field, message);
+        if (message) valid = false;
+      });
+
+      return valid;
+    }
+
+    function fillForm() {
+      const savedGoals = loadSavedGoals();
+      Object.entries(goalFields).forEach(([key, field]) => {
+        field.input.value = savedGoals[key];
+      });
+    }
+
+    function loadSavedEntries() {
+      const saved = localStorage.getItem(ENTRIES_STORAGE_KEY);
+      if (!saved) return [];
+
+      try {
+        const entries = JSON.parse(saved);
+        return Array.isArray(entries) ? entries : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function exportData() {
+      const exportFile = {
+        entries: loadSavedEntries(),
+        goals: loadSavedGoals(),
+        exportedAt: new Date().toISOString(),
+      };
+      const fileText = JSON.stringify(exportFile, null, 2);
+      const fileBlob = new Blob([fileText], { type: 'application/json' });
+      const downloadUrl = URL.createObjectURL(fileBlob);
+      const downloadLink = document.createElement('a');
+
+      downloadLink.href = downloadUrl;
+      downloadLink.download = 'life-dashboard-data.json';
+      downloadLink.click();
+      URL.revokeObjectURL(downloadUrl);
+    }
+
+    document.getElementById('goals-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const feedback = document.getElementById('goals-feedback');
+
+      if (!validateForm()) {
+        feedback.textContent = 'Please fix the highlighted goals.';
+        feedback.className = 'feedback error';
+        return;
+      }
+
+      const goals = Object.fromEntries(
+        Object.entries(goalFields).map(([key, field]) => [key, Number(field.input.value)])
+      );
+
+      localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
+      feedback.textContent = 'Goals saved. Your Summary page will use these targets now.';
+      feedback.className = 'feedback success';
+    });
+
+    Object.values(goalFields).forEach((field) => {
+      field.input.addEventListener('input', () => {
+        setError(field, validateGoal(field));
+      });
+    });
+
+    document.getElementById('export-data-button').addEventListener('click', exportData);
+
+    fillForm();
+  </script>
+</body>
+</html>

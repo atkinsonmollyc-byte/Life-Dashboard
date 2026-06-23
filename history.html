@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Life Dashboard — History</title>
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -11,6 +12,10 @@
     <nav class="page-tabs" aria-label="Primary">
       <a class="page-tab" href="index.html">Log Entry</a>
       <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
       <a class="page-tab active" href="history.html" aria-current="page">History</a>
     </nav>
 
@@ -27,6 +32,7 @@
     </section>
 
     <section>
+      <p id="history-feedback" class="feedback success hidden" aria-live="polite">Entry updated successfully.</p>
       <div id="history-area">
         <!-- table or no-entries message injected here -->
       </div>
@@ -75,6 +81,7 @@
           <th>Exercise</th>
           <th>Reading</th>
           <th>Screen Time</th>
+          <th>Mood</th>
           <th>Action</th>
         </tr>
       `;
@@ -102,7 +109,13 @@
           <td>${e.exercise != null ? e.exercise : '—'}</td>
           <td>${e.reading != null ? e.reading : '—'}</td>
           <td>${e.screenTime != null ? e.screenTime : '—'}</td>
-          <td><button class="delete-entry" data-index="${originalIndex}">Remove</button></td>
+          <td>${e.mood || '—'}</td>
+          <td>
+            <div class="history-actions">
+              <a class="edit-entry" href="index.html?editIndex=${originalIndex}">Edit</a>
+              <button class="delete-entry" data-index="${originalIndex}">Remove</button>
+            </div>
+          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -132,6 +145,12 @@
         const countEl = document.getElementById('entries-saved');
         if (countEl) countEl.textContent = all.length;
       });
+
+      const params = new URLSearchParams(window.location.search);
+      const updatedMessage = document.getElementById('history-feedback');
+      if (params.get('updated') === '1') {
+        updatedMessage.classList.remove('hidden');
+      }
 
       const entries = loadEntries();
       renderHistory(entries);

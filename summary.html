@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Life Dashboard Summary</title>
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -11,18 +12,27 @@
     <nav class="page-tabs" aria-label="Primary">
       <a class="page-tab" href="index.html">Log Entry</a>
       <a class="page-tab active" href="summary.html" aria-current="page">Summary</a>
+      <a class="page-tab" href="achievements.html">Achievements</a>
+      <a class="page-tab" href="companion.html">Companion</a>
+      <a class="page-tab" href="goals.html">Goals</a>
+      <a class="page-tab" href="reading-log.html">Reading Log</a>
       <a class="page-tab" href="history.html">History</a>
     </nav>
 
-    <section class="summary-header">
-      <p class="success-title">✓ Today's Summary</p>
-      <p class="summary-copy">Great job! Your daily habits have been logged.</p>
-      <div class="data-notice" role="status" aria-live="polite">
-        <span class="notice-icon">ℹ</span>
-        <span>This app stores only the entries you add on this device.</span>
+    <section class="summary-header summary-header-with-profile">
+      <div class="summary-header-copy">
+        <p class="success-title">✓ Today's Summary</p>
+        <p class="welcome-message hidden" id="summary-welcome"></p>
+        <p class="summary-copy">Great job! Your daily habits have been logged.</p>
+        <div class="data-notice" role="status" aria-live="polite">
+          <span class="notice-icon">ℹ</span>
+          <span>This app stores only the entries you add on this device.</span>
+        </div>
       </div>
-      <div class="summary-actions">
-        <a class="button-link" href="history.html">View History →</a>
+
+      <div class="summary-profile-badge" aria-label="Streak and selected avatar">
+        <span class="summary-profile-streak">🔥 <span id="summary-profile-streak">0</span></span>
+        <span class="summary-profile-avatar" id="summary-profile-avatar">♡</span>
       </div>
     </section>
 
@@ -30,6 +40,10 @@
       <div class="hub-intro">
         <h2>Today's Summary</h2>
         <p>Latest entry and quick habit overview for today.</p>
+        <div class="today-mood-badge">
+          <span class="today-mood-label">Mood</span>
+          <span class="today-mood-value" id="today-mood">—</span>
+        </div>
       </div>
 
       <div class="hub-container">
@@ -40,26 +54,31 @@
         <div class="hub-node node-water card-water">
           <span class="node-label">Water</span>
           <span class="node-value" id="water-value">—</span>
+          <span class="node-status" id="water-status">Goal check</span>
         </div>
 
         <div class="hub-node node-sleep card-sleep">
           <span class="node-label">Sleep</span>
           <span class="node-value" id="sleep-value">—</span>
+          <span class="node-status" id="sleep-status">Goal check</span>
         </div>
 
         <div class="hub-node node-exercise card-exercise">
           <span class="node-label">Exercise</span>
           <span class="node-value" id="exercise-value">—</span>
+          <span class="node-status" id="exercise-status">Goal check</span>
         </div>
 
         <div class="hub-node node-reading card-reading">
           <span class="node-label">Reading</span>
           <span class="node-value" id="reading-value">—</span>
+          <span class="node-status" id="reading-status">Goal check</span>
         </div>
 
         <div class="hub-node node-screenTime card-screenTime">
           <span class="node-label">Screen Time</span>
           <span class="node-value" id="screenTime-value">—</span>
+          <span class="node-status" id="screenTime-status">Lower is better</span>
         </div>
       </div>
       <div id="today-empty" class="no-entries hidden" style="margin-top:1rem; text-align:center;">
@@ -90,19 +109,188 @@
       </div>
     </section>
 
-    <section>
-      <h2>Data Overview</h2>
-      <div class="overview-grid">
-        <div class="overview-card">
-          <p class="overview-card-title">Entries Saved</p>
-          <p class="overview-card-value" id="entries-saved">0</p>
+    <section class="goal-success-section" aria-labelledby="goal-success-title">
+      <div class="achievements-heading">
+        <h2 id="goal-success-title">Goal Success</h2>
+        <p>How often each habit has met your current goals.</p>
+      </div>
+
+      <div id="goal-success-empty" class="no-entries hidden">Not enough data yet.</div>
+      <div class="goal-success-grid">
+        <div class="goal-success-card">
+          <div class="goal-success-header">
+            <span class="goal-success-icon">💧</span>
+            <p class="goal-success-title">Water Goal Success</p>
+          </div>
+          <p class="goal-success-value" id="water-success">—</p>
+          <div class="goal-success-bar" aria-hidden="true">
+            <span id="water-success-bar"></span>
+          </div>
+        </div>
+        <div class="goal-success-card">
+          <div class="goal-success-header">
+            <span class="goal-success-icon">😴</span>
+            <p class="goal-success-title">Sleep Goal Success</p>
+          </div>
+          <p class="goal-success-value" id="sleep-success">—</p>
+          <div class="goal-success-bar" aria-hidden="true">
+            <span id="sleep-success-bar"></span>
+          </div>
+        </div>
+        <div class="goal-success-card">
+          <div class="goal-success-header">
+            <span class="goal-success-icon">🏃</span>
+            <p class="goal-success-title">Exercise Goal Success</p>
+          </div>
+          <p class="goal-success-value" id="exercise-success">—</p>
+          <div class="goal-success-bar" aria-hidden="true">
+            <span id="exercise-success-bar"></span>
+          </div>
+        </div>
+        <div class="goal-success-card">
+          <div class="goal-success-header">
+            <span class="goal-success-icon">📚</span>
+            <p class="goal-success-title">Reading Goal Success</p>
+          </div>
+          <p class="goal-success-value" id="reading-success">—</p>
+          <div class="goal-success-bar" aria-hidden="true">
+            <span id="reading-success-bar"></span>
+          </div>
+        </div>
+        <div class="goal-success-card">
+          <div class="goal-success-header">
+            <span class="goal-success-icon">📱</span>
+            <p class="goal-success-title">Screen Time Success</p>
+          </div>
+          <p class="goal-success-value" id="screenTime-success">—</p>
+          <div class="goal-success-bar" aria-hidden="true">
+            <span id="screenTime-success-bar"></span>
+          </div>
         </div>
       </div>
     </section>
+
+    <section class="achievements-section" aria-labelledby="achievements-title">
+      <div class="achievements-heading">
+        <h2 id="achievements-title">Achievements</h2>
+        <p>Cute badges unlocked from your saved habits.</p>
+      </div>
+      <div class="achievements-grid">
+        <div class="achievement-card locked" id="achievement-hydration">
+          <span class="achievement-icon">💧</span>
+          <div>
+            <p class="achievement-title">Hydration Hero</p>
+            <p class="achievement-copy">Meet your water goal today.</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-bookworm">
+          <span class="achievement-icon">📚</span>
+          <div>
+            <p class="achievement-title">Bookworm</p>
+            <p class="achievement-copy">Log 100+ total reading minutes.</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-consistency">
+          <span class="achievement-icon">🔥</span>
+          <div>
+            <p class="achievement-title">Consistency Champion</p>
+            <p class="achievement-copy">Reach a 5 day streak.</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-sleep">
+          <span class="achievement-icon">😴</span>
+          <div>
+            <p class="achievement-title">Sleep Star</p>
+            <p class="achievement-copy">Meet your sleep goal today.</p>
+          </div>
+        </div>
+        <div class="achievement-card locked" id="achievement-balanced">
+          <span class="achievement-icon">🌸</span>
+          <div>
+            <p class="achievement-title">Balanced Day</p>
+            <p class="achievement-copy">Meet at least 3 goals today.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="personal-bests-section" aria-labelledby="personal-bests-title">
+      <div class="achievements-heading">
+        <h2 id="personal-bests-title">Personal Bests</h2>
+        <p>Your best habit moments from all saved entries.</p>
+      </div>
+
+      <div class="personal-bests-grid">
+        <div class="personal-best-card">
+          <span class="personal-best-icon">💧</span>
+          <div>
+            <p class="personal-best-title">Most Water Logged</p>
+            <p class="personal-best-value" id="best-water">—</p>
+          </div>
+        </div>
+        <div class="personal-best-card">
+          <span class="personal-best-icon">😴</span>
+          <div>
+            <p class="personal-best-title">Most Sleep Logged</p>
+            <p class="personal-best-value" id="best-sleep">—</p>
+          </div>
+        </div>
+        <div class="personal-best-card">
+          <span class="personal-best-icon">🏃</span>
+          <div>
+            <p class="personal-best-title">Most Exercise Logged</p>
+            <p class="personal-best-value" id="best-exercise">—</p>
+          </div>
+        </div>
+        <div class="personal-best-card">
+          <span class="personal-best-icon">📚</span>
+          <div>
+            <p class="personal-best-title">Most Reading Logged</p>
+            <p class="personal-best-value" id="best-reading">—</p>
+          </div>
+        </div>
+        <div class="personal-best-card personal-best-card-featured">
+          <span class="personal-best-icon">🔥</span>
+          <div>
+            <p class="personal-best-title">Longest Streak Achieved</p>
+            <p class="personal-best-value" id="best-streak">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
     const STORAGE_KEY = 'lifeDashboardEntries';
+    const GOALS_STORAGE_KEY = 'lifeDashboardGoals';
+    const COMPANION_STORAGE_KEY = 'lifeDashboardCompanion';
+    const USER_NAME_STORAGE_KEY = 'lifeDashboardUserName';
+
+    const DEFAULT_GOALS = {
+      water: 8,
+      sleep: 8,
+      exercise: 30,
+      reading: 20,
+      screenTime: 4,
+    };
+
+    const HABIT_DETAILS = {
+      water: { unit: 'glasses', type: 'minimum' },
+      sleep: { unit: 'hours', type: 'minimum' },
+      exercise: { unit: 'min', type: 'minimum' },
+      reading: { unit: 'min', type: 'minimum' },
+      screenTime: { unit: 'hours limit', type: 'maximum' },
+    };
+
+    const AVATAR_DETAILS = {
+      cat: { icon: '🐱', name: 'cat' },
+      dog: { icon: '🐶', name: 'dog' },
+      flower: { icon: '🌸', name: 'flower' },
+      star: { icon: '⭐', name: 'star' },
+      moon: { icon: '🌙', name: 'moon' },
+      butterfly: { icon: '🦋', name: 'butterfly' },
+    };
 
     function loadEntries() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -116,12 +304,226 @@
       }
     }
 
+    function loadGoals() {
+      const saved = localStorage.getItem(GOALS_STORAGE_KEY);
+      if (!saved) return DEFAULT_GOALS;
+
+      try {
+        return { ...DEFAULT_GOALS, ...JSON.parse(saved) };
+      } catch {
+        return DEFAULT_GOALS;
+      }
+    }
+
+    function loadCompanion() {
+      return localStorage.getItem(COMPANION_STORAGE_KEY) || '';
+    }
+
+    function loadUserName() {
+      return localStorage.getItem(USER_NAME_STORAGE_KEY) || '';
+    }
+
+    function updateCompanionSummary() {
+      const companion = loadCompanion();
+      const icon = document.getElementById('summary-profile-avatar');
+      const avatar = AVATAR_DETAILS[companion];
+
+      icon.textContent = avatar ? avatar.icon : '♡';
+    }
+
+    function updateWelcomeMessage() {
+      const name = loadUserName();
+      const companion = loadCompanion();
+      const avatar = AVATAR_DETAILS[companion];
+      const welcome = document.getElementById('summary-welcome');
+
+      if (!name) {
+        welcome.classList.add('hidden');
+        welcome.textContent = '';
+        return;
+      }
+
+      welcome.textContent = `Welcome back, ${name} ${avatar ? avatar.icon : '🌸'}`;
+      welcome.classList.remove('hidden');
+    }
+
     function todayYMD() {
       const d = new Date();
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
+    }
+
+    function dateToYMD(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function calculateCurrentStreak(entries) {
+      const entryDates = new Set(
+        (entries || [])
+          .filter(entry => entry && entry.date)
+          .map(entry => entry.date)
+      );
+
+      let streak = 0;
+      const checkDate = new Date();
+
+      while (entryDates.has(dateToYMD(checkDate))) {
+        streak += 1;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      return streak;
+    }
+
+    function ymdToDayNumber(ymd) {
+      const [year, month, day] = ymd.split('-').map(Number);
+      return Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+    }
+
+    function calculateLongestStreak(entries) {
+      const dayNumbers = [...new Set(
+        (entries || [])
+          .filter(entry => entry && entry.date)
+          .map(entry => ymdToDayNumber(entry.date))
+      )].sort((a, b) => a - b);
+
+      let longest = 0;
+      let current = 0;
+      let previous = null;
+
+      dayNumbers.forEach((dayNumber) => {
+        current = previous !== null && dayNumber === previous + 1 ? current + 1 : 1;
+        longest = Math.max(longest, current);
+        previous = dayNumber;
+      });
+
+      return longest;
+    }
+
+    function highestEntryValue(entries, key) {
+      return (entries || []).reduce((highest, entry) => {
+        const value = Number(entry[key] || 0);
+        return Math.max(highest, value);
+      }, 0);
+    }
+
+    function updatePersonalBests(entries) {
+      const hasEntries = entries.length > 0;
+      const bestWater = highestEntryValue(entries, 'water');
+      const bestSleep = highestEntryValue(entries, 'sleep');
+      const bestExercise = highestEntryValue(entries, 'exercise');
+      const bestReading = highestEntryValue(entries, 'reading');
+      const bestStreak = calculateLongestStreak(entries);
+
+      document.getElementById('best-water').textContent = hasEntries ? `${bestWater} glasses` : '—';
+      document.getElementById('best-sleep').textContent = hasEntries ? `${bestSleep} hrs` : '—';
+      document.getElementById('best-exercise').textContent = hasEntries ? `${bestExercise} min` : '—';
+      document.getElementById('best-reading').textContent = hasEntries ? `${bestReading} min` : '—';
+      document.getElementById('best-streak').textContent = hasEntries ? `${bestStreak} days` : '—';
+    }
+
+    function calculateGoalSuccess(entries, key, goals) {
+      if (!entries.length) return null;
+
+      const details = HABIT_DETAILS[key];
+      const goal = Number(goals[key]);
+      const successfulEntries = entries.filter((entry) => {
+        const value = Number(entry[key]);
+        return details.type === 'maximum' ? value <= goal : value >= goal;
+      }).length;
+
+      return Math.round((successfulEntries / entries.length) * 100);
+    }
+
+    function updateGoalSuccess(entries, goals) {
+      const emptyState = document.getElementById('goal-success-empty');
+      const hasEntries = entries.length > 0;
+
+      emptyState.classList.toggle('hidden', hasEntries);
+
+      Object.keys(HABIT_DETAILS).forEach((key) => {
+        const percentage = calculateGoalSuccess(entries, key, goals);
+        const valueElement = document.getElementById(`${key}-success`);
+        const barElement = document.getElementById(`${key}-success-bar`);
+
+        valueElement.textContent = percentage === null ? '—' : `${percentage}%`;
+        barElement.style.width = percentage === null ? '0%' : `${percentage}%`;
+      });
+    }
+
+    function updateMindMapNode(key, todaysEntry, goals) {
+      const valueElement = document.getElementById(`${key}-value`);
+      const statusElement = document.getElementById(`${key}-status`);
+      const nodeElement = valueElement.closest('.hub-node');
+      const details = HABIT_DETAILS[key];
+      const goal = Number(goals[key]);
+
+      nodeElement.classList.remove('goal-met', 'goal-not-met', 'goal-over-limit');
+
+      if (!todaysEntry) {
+        valueElement.textContent = '—';
+        statusElement.textContent = key === 'screenTime' ? 'Lower is better' : 'Add today';
+        return;
+      }
+
+      const value = Number(todaysEntry[key]);
+      const met = details.type === 'maximum' ? value <= goal : value >= goal;
+
+      valueElement.textContent = `${value} / ${goal} ${details.unit}`;
+
+      if (met) {
+        nodeElement.classList.add('goal-met');
+        statusElement.textContent = details.type === 'maximum' ? 'Within limit' : 'Goal met';
+      } else if (details.type === 'maximum') {
+        nodeElement.classList.add('goal-over-limit');
+        statusElement.textContent = 'Over limit';
+      } else {
+        nodeElement.classList.add('goal-not-met');
+        statusElement.textContent = 'Keep going';
+      }
+    }
+
+    function updateMindMap(todaysEntry) {
+      const goals = loadGoals();
+      Object.keys(HABIT_DETAILS).forEach((key) => {
+        updateMindMapNode(key, todaysEntry, goals);
+      });
+    }
+
+    function goalIsMet(key, todaysEntry, goals) {
+      if (!todaysEntry) return false;
+
+      const details = HABIT_DETAILS[key];
+      const value = Number(todaysEntry[key]);
+      const goal = Number(goals[key]);
+
+      return details.type === 'maximum' ? value <= goal : value >= goal;
+    }
+
+    function countMetGoals(todaysEntry, goals) {
+      return Object.keys(HABIT_DETAILS).filter((key) => goalIsMet(key, todaysEntry, goals)).length;
+    }
+
+    function setAchievement(id, unlocked) {
+      const card = document.getElementById(id);
+      card.classList.toggle('unlocked', unlocked);
+      card.classList.toggle('locked', !unlocked);
+    }
+
+    function updateAchievements(entries, todaysEntry, goals, currentStreak) {
+      const totalReading = entries.reduce((sum, entry) => sum + Number(entry.reading || 0), 0);
+      const metGoals = countMetGoals(todaysEntry, goals);
+
+      setAchievement('achievement-hydration', goalIsMet('water', todaysEntry, goals));
+      setAchievement('achievement-bookworm', totalReading >= 100);
+      setAchievement('achievement-consistency', currentStreak >= 5);
+      setAchievement('achievement-sleep', goalIsMet('sleep', todaysEntry, goals));
+      setAchievement('achievement-balanced', metGoals >= 3);
     }
 
     function updateSummary(entries) {
@@ -132,30 +534,27 @@
 
       const emptyEl = document.getElementById('today-empty');
       if (todaysEntry) {
-        document.getElementById('water-value').textContent = `${todaysEntry.water} glasses`;
-        document.getElementById('sleep-value').textContent = `${todaysEntry.sleep} hrs`;
-        document.getElementById('exercise-value').textContent = `${todaysEntry.exercise} min`;
-        document.getElementById('reading-value').textContent = `${todaysEntry.reading} min`;
-        document.getElementById('screenTime-value').textContent = `${todaysEntry.screenTime} hrs`;
         if (emptyEl) emptyEl.classList.add('hidden');
       } else {
         // no entry for today
-        document.getElementById('water-value').textContent = '—';
-        document.getElementById('sleep-value').textContent = '—';
-        document.getElementById('exercise-value').textContent = '—';
-        document.getElementById('reading-value').textContent = '—';
-        document.getElementById('screenTime-value').textContent = '—';
         if (emptyEl) emptyEl.classList.remove('hidden');
       }
+      document.getElementById('today-mood').textContent = todaysEntry && todaysEntry.mood ? todaysEntry.mood : '—';
+      updateMindMap(todaysEntry);
 
       // Weekly snapshot & overview still use all entries
+      const goals = loadGoals();
       const totalEntries = entries.length;
       const totalSleep = entries.reduce((sum, entry) => sum + Number(entry.sleep), 0);
       const totalExercise = entries.reduce((sum, entry) => sum + Number(entry.exercise), 0);
       const totalReading = entries.reduce((sum, entry) => sum + Number(entry.reading), 0);
       const totalScreenTime = entries.reduce((sum, entry) => sum + Number(entry.screenTime), 0);
+      const currentStreak = calculateCurrentStreak(entries);
 
-      document.getElementById('entries-saved').textContent = totalEntries;
+      updateAchievements(entries, todaysEntry, goals, currentStreak);
+      updatePersonalBests(entries);
+      updateGoalSuccess(entries, goals);
+      document.getElementById('summary-profile-streak').textContent = currentStreak;
       document.getElementById('average-sleep').textContent = totalEntries ? `${(totalSleep / totalEntries).toFixed(1)} hrs` : '—';
       document.getElementById('total-exercise').textContent = totalEntries ? `${totalExercise} min` : '—';
       document.getElementById('total-reading').textContent = totalEntries ? `${totalReading} min` : '—';
@@ -163,6 +562,8 @@
     }
 
     const entries = loadEntries();
+    updateCompanionSummary();
+    updateWelcomeMessage();
     updateSummary(entries);
   </script>
 </body>
