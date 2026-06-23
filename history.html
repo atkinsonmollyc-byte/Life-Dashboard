@@ -8,6 +8,12 @@
 </head>
 <body>
   <main>
+    <nav class="page-tabs" aria-label="Primary">
+      <a class="page-tab" href="index.html">Log Entry</a>
+      <a class="page-tab" href="summary.html">Summary</a>
+      <a class="page-tab active" href="history.html" aria-current="page">History</a>
+    </nav>
+
     <section class="summary-header">
       <p class="success-title">Entry History</p>
       <p class="summary-copy">All your saved daily entries are shown below (most recent first).</p>
@@ -96,7 +102,7 @@
           <td>${e.exercise != null ? e.exercise : '—'}</td>
           <td>${e.reading != null ? e.reading : '—'}</td>
           <td>${e.screenTime != null ? e.screenTime : '—'}</td>
-          <td><button class="delete-entry" data-index="${originalIndex}">Delete</button></td>
+          <td><button class="delete-entry" data-index="${originalIndex}">Remove</button></td>
         `;
         tbody.appendChild(tr);
       }
